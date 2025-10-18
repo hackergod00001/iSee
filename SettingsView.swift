@@ -1,144 +1,67 @@
 import SwiftUI
 
-/// SettingsView provides configuration options for testing and fine-tuning
 struct SettingsView: View {
-    @ObservedObject var stateController: StateController
-    @ObservedObject var visionProcessor: VisionProcessor
-    @State private var showingResetAlert = false
+    @ObservedObject private var preferencesManager = PreferencesManager.shared
+    @ObservedObject private var notificationManager = NotificationManager.shared
+    @ObservedObject private var backgroundService = BackgroundMonitoringService.shared
     
     var body: some View {
-        NavigationView {
-            List {
-                // Status Section
-                Section("Current Status") {
-                    HStack {
-                        Text("Security State")
-                        Spacer()
-                        Text(stateController.statusMessage)
-                            .foregroundColor(stateColor)
-                    }
+        VStack(spacing: 20) {
+            Text("iSee Settings")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            Form {
+                Section("Notifications") {
+                    Toggle("Enable Notifications", isOn: $preferencesManager.notificationsEnabled)
+                        .disabled(!notificationManager.isAuthorized)
                     
-                    HStack {
-                        Text("Face Count")
-                        Spacer()
-                        Text("\(visionProcessor.faceCount)")
-                            .foregroundColor(.blue)
-                    }
-                    
-                    HStack {
-                        Text("Processing")
-                        Spacer()
-                        Text(visionProcessor.isProcessing ? "Active" : "Idle")
-                            .foregroundColor(visionProcessor.isProcessing ? .green : .gray)
-                    }
-                    
-                    if stateController.isInWarningState {
-                        HStack {
-                            Text("Time Until Alert")
-                            Spacer()
-                            Text(String(format: "%.1fs", stateController.timeUntilAlert))
-                                .foregroundColor(.orange)
+                    if !notificationManager.isAuthorized {
+                        Button("Request Permissions") {
+                            notificationManager.forceRequestPermissions()
                         }
-                        
-                        HStack {
-                            Text("Alert Progress")
-                            Spacer()
-                            ProgressView(value: stateController.alertProgress)
-                                .frame(width: 100)
-                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
                     }
                 }
                 
-                // Controls Section
-                Section("Controls") {
-                    Button("Reset to Safe State") {
-                        showingResetAlert = true
-                    }
-                    .foregroundColor(.blue)
+                Section("Monitoring") {
+                    Toggle("Auto-start Monitoring", isOn: $preferencesManager.autoStartMonitoring)
                     
-                    Button(stateController.isMonitoring ? "Stop Monitoring" : "Start Monitoring") {
-                        if stateController.isMonitoring {
-                            stateController.stopMonitoring()
-                        } else {
-                            stateController.startMonitoring()
+                    Toggle("Launch at Login", isOn: $preferencesManager.launchAtLogin)
+                }
+                
+                Section("Overlay") {
+                    HStack {
+                        Text("Auto-hide Delay")
+                        Spacer()
+                        Text("\(Int(preferencesManager.overlayAutoHideDelay)) seconds")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Slider(value: $preferencesManager.overlayAutoHideDelay, in: 5...30, step: 5)
+                }
+                
+                        Section("Detection") {
+                            HStack {
+                                Text("Alert Cooldown Period")
+                                Spacer()
+                                Text("\(Int(preferencesManager.alertThreshold)) seconds")
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Slider(value: $preferencesManager.alertThreshold, in: 1...10, step: 1)
                         }
-                    }
-                    .foregroundColor(stateController.isMonitoring ? .red : .green)
-                }
-                
-                // Test Section
-                Section("Testing") {
-                    Button("Simulate 2 Faces") {
-                        stateController.updateFaceCount(2)
-                    }
-                    .foregroundColor(.orange)
-                    
-                    Button("Simulate 1 Face") {
-                        stateController.updateFaceCount(1)
-                    }
-                    .foregroundColor(.green)
-                    
-                    Button("Simulate 0 Faces") {
-                        stateController.updateFaceCount(0)
-                    }
-                    .foregroundColor(.red)
-                }
-                
-                // Information Section
-                Section("About") {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Shoulder Surfer Detection")
-                            .font(.headline)
-                        
-                        Text("This app uses on-device face detection to alert you when someone else is looking at your screen. All processing is done locally for your privacy.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Alert Threshold: 2.0 seconds")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Processing Rate: ~5 FPS")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
-                }
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
+            .formStyle(.grouped)
+            
+            Spacer()
         }
-        .alert("Reset to Safe State", isPresented: $showingResetAlert) {
-            Button("Reset", role: .destructive) {
-                stateController.resetToSafe()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("This will reset the security state to safe and clear any active alerts.")
-        }
-    }
-    
-    private var stateColor: Color {
-        switch stateController.currentState {
-        case .safe:
-            return .green
-        case .warning:
-            return .orange
-        case .alert:
-            return .red
-        case .error:
-            return .gray
-        }
+        .padding()
+        .frame(width: 450, height: 500)
     }
 }
 
-// MARK: - Preview
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView(
-            stateController: StateController(),
-            visionProcessor: VisionProcessor()
-        )
-    }
+#Preview {
+    SettingsView()
 }
-

@@ -1,7 +1,7 @@
 # iSee App - Deployment Guide for macOS
 
 ## Overview
-iSee is a privacy-first shoulder surfer detection app for macOS that uses on-device face detection to alert users when someone else is looking at their screen.
+iSee is a sophisticated privacy-first shoulder surfer detection app for macOS that uses on-device face detection to alert users when someone else is looking at their screen. Features include a beautiful Dynamic Island-style camera overlay, intelligent long-term threat detection, and comprehensive settings for maximum security and usability.
 
 ## System Requirements
 - **macOS**: 13.0 (Ventura) or later
@@ -13,7 +13,7 @@ iSee is a privacy-first shoulder surfer detection app for macOS that uses on-dev
 
 ### Option 1: Download Pre-built App
 1. Go to the [Releases](https://github.com/hackergod00001/iSee/releases) page
-2. Download `iSee-v0.0.1.dmg` for the latest version
+2. Download `iSee-v0.1.0.dmg` for the latest version
 3. Open the downloaded DMG file
 4. Drag iSee.app to your Applications folder
 5. Launch iSee from Applications or Spotlight
@@ -52,17 +52,23 @@ iSee is a privacy-first shoulder surfer detection app for macOS that uses on-dev
 
 ### First Launch
 1. **Camera Permission**: The app will request camera access. Click "Allow" to enable face detection.
-2. **Positioning**: Position yourself in front of the camera so your face is clearly visible.
-3. **Status Indicators**: Watch the status indicators at the bottom of the screen:
-   - 🟢 **Safe**: 1 face detected (normal state)
-   - 🟠 **Warning**: 2+ faces detected, counting down to alert
-   - 🔴 **Alert**: 2+ faces detected for sustained period
-   - ⚫ **Error**: Camera issues or no faces detected
+2. **Auto-start Monitoring**: The app automatically starts monitoring when launched (configurable in Settings).
+3. **Menu Bar Icon**: Look for the eye icon in your menu bar - it will be green when safe.
+4. **Positioning**: Position yourself in front of the camera so your face is clearly visible.
+
+### Menu Bar Icon States
+- **🟢 Green Eye**: Safe state - no unauthorized viewers detected
+- **🟡 Yellow Eye**: Warning state - multiple faces detected, monitoring
+- **🟠 Orange Eye**: Alert state - shoulder surfer detected (short-term)
+- **🔴 Red Eye**: Long-term alert - shoulder surfer detected for >1 minute
+- **⚫ Gray Eye**: Monitoring disabled or camera unavailable
 
 ### Testing the App
-1. **Single Face Test**: Ensure only your face is visible - should show "Safe" status
-2. **Multi-Face Test**: Have someone else look at your screen - should trigger warning then alert
-3. **Settings**: Click the gear icon to access settings (currently shows placeholder)
+1. **Single Face Test**: Ensure only your face is visible - menu bar icon should be green
+2. **Multi-Face Test**: Have someone else look at your screen - should trigger yellow/orange/red states
+3. **Dynamic Island Overlay**: Click "Toggle Camera Feed" to see the beautiful camera overlay
+4. **Settings**: Click "Settings..." to access comprehensive configuration options
+5. **Notifications**: Test system notifications by triggering alerts (requires notification permission)
 
 ### Privacy & Security
 - **100% On-Device Processing**: All face detection happens locally
@@ -99,23 +105,36 @@ iSee is a privacy-first shoulder surfer detection app for macOS that uses on-dev
 ### Project Structure
 ```
 isee/
-├── iseeApp.swift              # App entry point
-├── ContentView.swift          # Main UI with camera preview
-├── CameraManager.swift        # Camera handling and permissions
-├── VisionProcessor.swift      # Face detection processing
-├── StateController.swift      # Security state management
-├── NotificationBanner.swift   # Alert UI components
-├── SettingsView.swift         # Configuration and testing
-├── Info.plist                 # App configuration
-├── Preview Content/           # SwiftUI preview assets
-└── isee.xcodeproj/           # Xcode project file
+├── iseeApp.swift                   # App entry point with MenuBarExtra
+├── AppDelegate.swift               # Background app lifecycle management
+├── MenuBarController.swift         # Menu bar icon and interaction logic
+├── MenuBarView.swift               # Menu bar dropdown interface
+├── BackgroundMonitoringService.swift # Core monitoring orchestration
+├── CameraOverlayWindow.swift       # Dynamic Island overlay window
+├── CameraOverlayView.swift         # Camera feed with glassmorphism design
+├── NotificationManager.swift       # Enhanced system notification handling
+├── PreferencesManager.swift        # User settings and state persistence
+├── LaunchAtLoginManager.swift      # Auto-launch functionality
+├── SettingsWindow.swift            # Settings window management
+├── SettingsView.swift              # Comprehensive settings interface
+├── CameraManager.swift             # Camera handling and permissions
+├── VisionProcessor.swift           # Face detection processing
+├── StateController.swift           # Security state management
+├── Info.plist                      # App configuration
+├── Preview Content/                # SwiftUI preview assets
+└── isee.xcodeproj/                 # Xcode project file
 ```
 
 ### Key Features
-- **Real-time Face Detection**: Uses Apple's Vision framework
-- **Cross-platform UI**: SwiftUI with macOS-specific optimizations
-- **Performance Optimized**: 5 FPS processing with frame skipping
-- **Privacy-First**: No data collection or network access
+- **Real-time Face Detection**: Uses Apple's Vision framework with optimized performance
+- **Dynamic Island Overlay**: Beautiful liquid-expanding camera feed with glassmorphism
+- **Menu Bar Integration**: Clean, minimal interface that doesn't clutter your screen
+- **Enhanced Notifications**: Descriptive alerts with actionable buttons and rate limiting
+- **Comprehensive Settings**: Full control over detection sensitivity and preferences
+- **Long-term Threat Detection**: Red menu bar icon when shoulder surfing persists >1 minute
+- **Auto-start Monitoring**: Begins protection immediately when app launches
+- **Launch at Login**: Optional automatic startup for continuous protection
+- **Privacy-First**: 100% on-device processing, no data collection or network access
 
 ### Contributing
 1. Fork the repository
@@ -132,4 +151,5 @@ This project is open source. See the main README for license details.
 - **Discussions**: Join the conversation on [GitHub Discussions](https://github.com/hackergod00001/iSee/discussions)
 
 ## Version History
-- **v0.0.1**: Initial release with basic face detection and alerts
+- **v0.0.1**: Initial pre-release with basic face detection and alerts
+- **v0.1.0**: Major update with Dynamic Island overlay, enhanced notifications, comprehensive settings, and long-term threat detection
