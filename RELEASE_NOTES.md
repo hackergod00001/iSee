@@ -91,6 +91,19 @@
 - **Discussions**: [GitHub Discussions](https://github.com/hackergod00001/iSee/discussions)
 - **Documentation**: See README.md and DEPLOYMENT.md
 
+### 👥 Contributors
+
+**Development Team:**
+- **Upmanyu Jha** - Project Lead, Core Development, UI/UX Design, Technical Implementation, Code Architecture, Feature Development
+- **AI Assistant (Claude)** - Technical Implementation, Dev Support
+
+**Key Contributions:**
+- **Core Architecture**: Background monitoring service, menu bar integration
+- **Dynamic Island UI**: Liquid expansion animations, glassmorphism effects
+- **Vision Processing**: Face detection, shoulder surfer identification
+- **System Integration**: Notifications, launch at login, preferences management
+- **Documentation**: Comprehensive guides, release notes, deployment instructions
+
 ### 🙏 Acknowledgments
 - Built with Apple's Vision and AVFoundation frameworks
 - SwiftUI for modern, native UI
