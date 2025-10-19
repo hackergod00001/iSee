@@ -15,7 +15,7 @@ struct CameraOverlayView: View {
     
     var body: some View {
         ZStack {
-            // Glassmorphism background
+            // Glassmorphism background with notch-integrated styling
             RoundedRectangle(cornerRadius: cornerRadius)
                 .fill(.ultraThinMaterial)
                 .overlay(
@@ -116,14 +116,13 @@ struct CameraOverlayView: View {
                 damping: 15,
                 initialVelocity: 5
             )
-            .delay(0.1)
         ) {
-            scale = 1.05
+            scale = 1.03
             cornerRadius = 16
         }
         
         // Settle to final scale
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             withAnimation(.easeOut(duration: 0.2)) {
                 scale = 1.0
                 animationPhase = .expanded

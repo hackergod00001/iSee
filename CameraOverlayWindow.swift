@@ -111,9 +111,9 @@ class CameraOverlayWindow: ObservableObject {
         let windowWidth: CGFloat = 340
         let windowHeight: CGFloat = 220
         
-        // Position at top-center, very close to top edge (near camera)
+        // Position at top-center, aligned with MacBook notch
         let centerX = screenWidth / 2 - windowWidth / 2
-        let topY = screen.visibleFrame.maxY - windowHeight - 10 // 10pt from very top
+        let topY = screen.visibleFrame.maxY - windowHeight // No gap - start at absolute top
         
         return CGPoint(x: centerX, y: topY)
     }
@@ -149,22 +149,22 @@ class CameraOverlayWindow: ObservableObject {
         // Position window at top-center
         positionWindow()
         
-        // Start invisible and small
+        // Start invisible and notch-sized
         window.alphaValue = 0
         let expandedOrigin = getExpandedOrigin()
-        window.setFrame(NSRect(origin: expandedOrigin, size: CGSize(width: 20, height: 20)), display: false)
+        window.setFrame(NSRect(origin: expandedOrigin, size: CGSize(width: 200, height: 30)), display: false)
         window.makeKeyAndOrderFront(nil)
         
-        // Animate expansion
+        // Animate expansion from notch to full size
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.7
+            context.duration = 0.6
             context.timingFunction = CAMediaTimingFunction(controlPoints: 0.34, 1.56, 0.64, 1)
             window.animator().alphaValue = 1.0
             window.animator().setFrame(NSRect(origin: expandedOrigin, size: CGSize(width: 340, height: 220)), display: true)
         })
         
         startAutoHideTimer()
-        print("CameraOverlayWindow: Showing overlay with liquid expansion")
+        print("CameraOverlayWindow: Showing overlay with notch-integrated liquid expansion")
     }
     
     private func getExpandedOrigin() -> CGPoint {
@@ -174,11 +174,16 @@ class CameraOverlayWindow: ObservableObject {
         let windowWidth: CGFloat = 340
         let windowHeight: CGFloat = 220
         
-        // Calculate position to keep window centered during expansion
+        // Calculate position to start from screen top edge (notch area)
         let centerX = screenWidth / 2 - windowWidth / 2
-        let topY = screen.visibleFrame.maxY - windowHeight - 10
+        let topY = screen.visibleFrame.maxY - windowHeight // No padding - grow from notch
         
         return CGPoint(x: centerX, y: topY)
+    }
+    
+    private func hasNotch() -> Bool {
+        guard let screen = NSScreen.main else { return false }
+        return screen.safeAreaInsets.top > 0
     }
     
     private func collapseAndHide() {
@@ -189,7 +194,7 @@ class CameraOverlayWindow: ObservableObject {
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             window.animator().alphaValue = 0
             window.animator().setFrame(
-                NSRect(origin: window.frame.origin, size: CGSize(width: 20, height: 20)),
+                NSRect(origin: window.frame.origin, size: CGSize(width: 200, height: 30)),
                 display: true
             )
         }, completionHandler: {
