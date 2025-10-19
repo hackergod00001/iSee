@@ -146,13 +146,13 @@ class CameraOverlayWindow: ObservableObject {
         
         guard let window = window else { return }
         
-        // Position window at top-center
-        positionWindow()
-        
-        // Start invisible and notch-sized
-        window.alphaValue = 0
+        // Get notch-integrated position
+        let notchPosition = getNotchPosition()
         let expandedOrigin = getExpandedOrigin()
-        window.setFrame(NSRect(origin: expandedOrigin, size: CGSize(width: 200, height: 30)), display: false)
+        
+        // Start invisible and notch-sized at the notch position
+        window.alphaValue = 0
+        window.setFrame(NSRect(origin: notchPosition, size: CGSize(width: 200, height: 30)), display: false)
         window.makeKeyAndOrderFront(nil)
         
         // Animate expansion from notch to full size
@@ -164,7 +164,21 @@ class CameraOverlayWindow: ObservableObject {
         })
         
         startAutoHideTimer()
-        print("CameraOverlayWindow: Showing overlay with notch-integrated liquid expansion")
+        print("CameraOverlayWindow: Showing overlay with notch-integrated liquid expansion from position: \(notchPosition)")
+    }
+    
+    private func getNotchPosition() -> CGPoint {
+        guard let screen = NSScreen.main else { return CGPoint.zero }
+        
+        let screenWidth = screen.visibleFrame.width
+        let notchWidth: CGFloat = 200
+        let notchHeight: CGFloat = 30
+        
+        // Position at the exact notch location (top-center of screen)
+        let centerX = screenWidth / 2 - notchWidth / 2
+        let topY = screen.visibleFrame.maxY - notchHeight // Start at the very top edge
+        
+        return CGPoint(x: centerX, y: topY)
     }
     
     private func getExpandedOrigin() -> CGPoint {
@@ -189,12 +203,14 @@ class CameraOverlayWindow: ObservableObject {
     private func collapseAndHide() {
         guard let window = window else { return }
         
+        let notchPosition = getNotchPosition()
+        
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.5
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             window.animator().alphaValue = 0
             window.animator().setFrame(
-                NSRect(origin: window.frame.origin, size: CGSize(width: 200, height: 30)),
+                NSRect(origin: notchPosition, size: CGSize(width: 200, height: 30)),
                 display: true
             )
         }, completionHandler: {
@@ -202,7 +218,7 @@ class CameraOverlayWindow: ObservableObject {
         })
         
         stopAutoHideTimer()
-        print("CameraOverlayWindow: Collapsed and hidden overlay")
+        print("CameraOverlayWindow: Collapsed and hidden overlay back to notch position: \(notchPosition)")
     }
 }
 
