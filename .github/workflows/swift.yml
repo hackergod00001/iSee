@@ -1,0 +1,196 @@
+name: Swift CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+    
+    - name: Show Xcode version
+      run: xcodebuild -version
+      
+    - name: Show Swift version
+      run: swift --version
+      
+    - name: Cache Swift packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          .build
+          ~/Library/Caches/org.swift.swiftpm
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+    
+    - name: Clean build folder
+      run: |
+        if [ -d "build" ]; then
+          rm -rf build
+        fi
+    
+    - name: Build project
+      run: |
+        xcodebuild clean build \
+          -project isee.xcodeproj \
+          -scheme isee \
+          -destination 'platform=macOS' \
+          -configuration Debug \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+    
+    - name: Run tests (if available)
+      continue-on-error: true
+      run: |
+        xcodebuild test \
+          -project isee.xcodeproj \
+          -scheme isee \
+          -destination 'platform=macOS' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+    
+    - name: Archive build logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-logs
+        path: |
+          ~/Library/Logs/DiagnosticReports/
+          *.log
+        retention-days: 7
+
+  lint:
+    name: Swift Lint
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install SwiftLint
+      run: |
+        brew install swiftlint
+    
+    - name: Run SwiftLint
+      continue-on-error: true
+      run: |
+        swiftlint lint --reporter github-actions-logging
+        
+  security-scan:
+    name: Security Scan
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check for hardcoded secrets
+      run: |
+        echo "Checking for potential secrets..."
+        if grep -r "API_KEY\|SECRET\|PASSWORD" --include="*.swift" .; then
+          echo "⚠️  Warning: Found potential hardcoded secrets"
+          exit 1
+        else
+          echo "✅ No hardcoded secrets found"
+        fi
+      continue-on-error: true
+      
+    - name: Check Info.plist configuration
+      run: |
+        if [ -f "Info.plist" ]; then
+          echo "✅ Info.plist exists"
+          plutil -lint Info.plist
+        else
+          echo "❌ Info.plist not found"
+          exit 1
+        fi
+
+  build-release:
+    name: Build Release (DMG)
+    runs-on: macos-13
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+    
+    - name: Build Release
+      run: |
+        xcodebuild clean build \
+          -project isee.xcodeproj \
+          -scheme isee \
+          -destination 'platform=macOS' \
+          -configuration Release \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+    
+    - name: Create DMG (if script exists)
+      continue-on-error: true
+      run: |
+        if [ -f "create_dmg.sh" ]; then
+          chmod +x create_dmg.sh
+          ./create_dmg.sh
+        else
+          echo "⚠️  create_dmg.sh not found, skipping DMG creation"
+        fi
+    
+    - name: Upload DMG artifact
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: iSee-Beta-V1.0.0
+        path: '*.dmg'
+        retention-days: 30
+        
+  project-info:
+    name: Project Information
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Display project structure
+      run: |
+        echo "=== Project Structure ==="
+        find . -name "*.swift" -not -path "*/.*" | head -30
+        echo ""
+        echo "=== Swift Files Count ==="
+        find . -name "*.swift" -not -path "*/.*" | wc -l
+        
+    - name: Display NotchNotification framework files
+      run: |
+        echo "=== NotchNotification Framework ==="
+        if [ -d "NotchNotification" ]; then
+          ls -la NotchNotification/
+        else
+          echo "NotchNotification directory not found"
+        fi
+        
+    - name: Check documentation
+      run: |
+        echo "=== Documentation Files ==="
+        ls -1 *.md 2>/dev/null || echo "No markdown files found"
+
