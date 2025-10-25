@@ -330,6 +330,9 @@ jobs:
     runs-on: macos-13
     needs: [build, lint, security-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pull-requests: read
     
     steps:
     - name: Checkout repository
@@ -358,10 +361,14 @@ jobs:
         
         echo "📦 Fetching latest changes..."
         git fetch origin main
-        git fetch origin master || git checkout -b master
+        git fetch origin master || echo "Master branch doesn't exist yet"
         
-        echo "🔄 Switching to master branch..."
-        git checkout master
+        echo "🔄 Creating/checking out master branch..."
+        if git show-ref --verify --quiet refs/remotes/origin/master; then
+          git checkout master
+        else
+          git checkout -b master
+        fi
         
         echo "⬆️  Merging main into master (main takes precedence)..."
         git merge origin/main --no-edit --strategy-option=theirs || {
