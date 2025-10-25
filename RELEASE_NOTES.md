@@ -1,6 +1,42 @@
-# iSee v0.1.0 Release Notes
+# iSee Release Notes
 
-## 🎉 Major Update - October 19, 2025
+## 🎉 Beta V1.0.0 - October 25, 2025
+
+### ✨ Latest Updates & Fixes
+
+#### 🔧 **DMG Creation & Build System**
+- **Fixed Version Extraction**: Correctly parses version from README.md (`**Version**: Beta V1.0.0`)
+- **Improved Version Processing**: Converts spaces to hyphens and lowercase for proper DMG naming
+- **Dynamic DMG Naming**: DMG files now properly named as `iSee-beta-v1.0.0.dmg` instead of generic names
+- **Enhanced Error Handling**: Better error handling for documentation copying and DMG creation
+- **Automated Releases**: DMG creation script now automatically extracts version and creates properly named files
+- **Build Optimization**: Improved build process with better cleanup and organization
+
+#### 🐛 **Bug Fixes & Improvements**
+- **Notification System**: Fixed notification popups not appearing (removed blocking permission checks)
+- **Bounding Box Mirroring**: Fixed face detection bounding boxes appearing on wrong side in camera preview
+- **Camera Preview**: Resolved black screen issues in camera feed
+- **Icon Synchronization**: Fixed notification icon not updating when toggled in settings
+- **UI Alignment**: Improved header icon spacing and alignment in Dynamic Island
+- **Swift Compilation**: Fixed `defaultInterval` access level issue in NotchNotification framework
+
+#### 🎨 **UI/UX Enhancements**
+- **Dynamic Island Integration**: Seamless integration with NotchNotification framework
+- **Improved Icon Layout**: Better spacing and alignment for header icons (X, gear, notification)
+- **Notification Popup Width**: Fixed width consistency between island and notification popups
+- **Corner Rounding**: Proper rounded corners matching notch shape for island and popups
+- **Color Consistency**: Improved icon colors (red X, yellow notification, gray gear)
+
+#### 🚀 **CI/CD & Automation**
+- **GitHub Actions Workflows**: Enhanced CI/CD with build, test, and release automation
+- **Dynamic Versioning**: Automatic version extraction from README.md for consistent releases
+- **DMG Automation**: Automated DMG creation with proper naming and organization
+- **Branch Synchronization**: Automatic sync between main and master branches
+- **Build Validation**: Comprehensive build testing and validation workflows
+
+---
+
+## 🎉 v0.1.0 - October 19, 2025
 
 ### ✨ New Features & Improvements
 
@@ -39,7 +75,7 @@
 - **Architecture**: Universal (Apple Silicon M1/M2/M3/M4 and Intel x64)
 - **Framework**: SwiftUI + AppKit with AVFoundation, Vision, and UserNotifications
 - **Bundle ID**: com.isee.app
-- **App Size**: ~108KB DMG
+- **App Size**: ~200KB DMG (Beta V1.0.0), ~168KB DMG (v0.1.0)
 - **Background Processing**: NSApplicationDelegate with accessory activation policy
 - **Animation Engine**: Core Animation with custom timing functions for liquid expansion
 - **State Management**: Combine framework for reactive UI updates
@@ -76,7 +112,7 @@
 - Requires camera permission for full functionality
 - Notification permissions are optional but recommended for alerts
 
-### 🔮 Upcoming Features (v0.2.0)
+### 🔮 Upcoming Features (v1.0.1)
 - Multiple camera support (external cameras)
 - Advanced privacy features (blur sensitive content)
 - Integration with Focus modes
@@ -111,7 +147,9 @@
 
 ---
 
-**Download**: [iSee-v0.1.0.dmg](https://github.com/hackergod00001/iSee/releases/download/v0.1.0/iSee-v0.1.0.dmg)
+**Latest Download**: [iSee-beta-v1.0.0.dmg](https://github.com/hackergod00001/iSee/releases/download/beta-v1.0.0/iSee-beta-v1.0.0.dmg) (200K)
+
+**Previous Version**: [iSee-v0.1.0.dmg](https://github.com/hackergod00001/iSee/releases/download/v0.1.0/iSee-v0.1.0.dmg) (168K)
 
 **Source Code**: [GitHub Repository](https://github.com/hackergod00001/iSee)
 
