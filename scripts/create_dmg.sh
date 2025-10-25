@@ -5,12 +5,10 @@ APP_NAME="iSee"
 
 # Extract version from README.md
 if [ -f "README.md" ]; then
-    VERSION=$(grep -m 1 "Version:" README.md | sed 's/.*Version: //' | sed 's/\*\*//' | xargs)
-    # Remove spaces and add 'v' prefix if not present
-    VERSION=$(echo "$VERSION" | tr -d ' ')
-    if [[ ! $VERSION =~ ^v ]]; then
-        VERSION="v${VERSION}"
-    fi
+    VERSION=$(grep -m 1 "\*\*Version\*\*:" README.md | sed 's/.*\*\*Version\*\*: //' | xargs)
+    # Convert spaces to hyphens and convert to lowercase
+    VERSION=$(echo "$VERSION" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+    echo "📋 Version extracted: ${VERSION}"
 else
     # Fallback to default version if README.md not found
     VERSION="v1.0.0"
@@ -52,15 +50,24 @@ echo "🔗 Mounting temporary DMG..."
 MOUNT_DIR="/Volumes/${APP_NAME}"
 hdiutil attach "${TEMP_DMG}" -readwrite -noverify -noautoopen
 
+# Wait for mount to complete
+sleep 2
+
 # Create Applications symlink
 echo "📁 Creating Applications symlink..."
 ln -s /Applications "${MOUNT_DIR}/Applications"
 
 # Copy documentation files
 echo "📄 Copying documentation..."
-cp README.md "${MOUNT_DIR}/"
-cp RELEASE_NOTES.md "${MOUNT_DIR}/"
-cp DEPLOYMENT.md "${MOUNT_DIR}/"
+if [ -f "README.md" ]; then
+    cp README.md "${MOUNT_DIR}/" 2>/dev/null || echo "⚠️  Could not copy README.md (read-only filesystem)"
+fi
+if [ -f "RELEASE_NOTES.md" ]; then
+    cp RELEASE_NOTES.md "${MOUNT_DIR}/" 2>/dev/null || echo "⚠️  Could not copy RELEASE_NOTES.md (read-only filesystem)"
+fi
+if [ -f "DEPLOYMENT.md" ]; then
+    cp DEPLOYMENT.md "${MOUNT_DIR}/" 2>/dev/null || echo "⚠️  Could not copy DEPLOYMENT.md (read-only filesystem)"
+fi
 
 # Unmount
 echo "🔓 Unmounting temporary DMG..."
@@ -70,6 +77,17 @@ hdiutil detach "${MOUNT_DIR}"
 echo "🎯 Converting to final DMG..."
 hdiutil convert "${TEMP_DMG}" -format UDZO -imagekey zlib-level=9 -o "${DMG_NAME}"
 
+# Check if DMG creation was successful
+if [ $? -ne 0 ]; then
+    echo "❌ DMG conversion failed!"
+    exit 1
+fi
+
+# Move DMG to releases folder
+echo "📁 Moving DMG to releases folder..."
+mkdir -p releases
+mv "${DMG_NAME}" "releases/"
+
 # Clean up
 echo "🧹 Cleaning up..."
 rm -f "${TEMP_DMG}"
@@ -77,6 +95,6 @@ rm -rf "./build"
 rm -rf "./release"
 
 echo ""
-echo "✅ Successfully created ${DMG_NAME}"
-echo "📦 Size: $(du -h "${DMG_NAME}" | cut -f1)"
+echo "✅ Successfully created releases/${DMG_NAME}"
+echo "📦 Size: $(du -h "releases/${DMG_NAME}" | cut -f1)"
 echo "🎉 Ready for GitHub release!"
