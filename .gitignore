@@ -17,6 +17,11 @@ build/
 DerivedData/
 *.xcuserstate
 *.xcworkspace
+
+# Cursor
+.cursor/
+
+# Releases
 releases/
 
 # Build products
