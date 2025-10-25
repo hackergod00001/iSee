@@ -1,3 +1,11 @@
+//
+//  SettingsView.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import SwiftUI
 
 struct SettingsView: View {
@@ -12,26 +20,21 @@ struct SettingsView: View {
                 .fontWeight(.bold)
             
             Form {
-                Section("Notifications") {
-                    Toggle("Enable Notifications", isOn: $preferencesManager.notificationsEnabled)
-                        .disabled(!notificationManager.isAuthorized)
+                Section("In-App Notifications") {
+                    Toggle("Enable In-Notch Notifications", isOn: $preferencesManager.notificationsEnabled)
                     
-                    if !notificationManager.isAuthorized {
-                        Button("Request Permissions") {
-                            notificationManager.forceRequestPermissions()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Notifications appear directly in the Mac notch area (Dynamic Island style).")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Note: These are in-app notifications and won't appear in macOS Settings → Notifications. You can also toggle this using the bell icon in the camera island.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .italic()
                     }
-                }
-                
-                Section("Monitoring") {
-                    Toggle("Auto-start Monitoring", isOn: $preferencesManager.autoStartMonitoring)
+                    .padding(.vertical, 2)
                     
-                    Toggle("Launch at Login", isOn: $preferencesManager.launchAtLogin)
-                }
-                
-                Section("Overlay") {
                     HStack {
                         Text("Auto-hide Delay")
                         Spacer()
@@ -40,18 +43,25 @@ struct SettingsView: View {
                     }
                     
                     Slider(value: $preferencesManager.overlayAutoHideDelay, in: 5...30, step: 5)
+                        .help("How long notification popups stay visible before auto-dismissing")
                 }
                 
-                        Section("Detection") {
-                            HStack {
-                                Text("Alert Cooldown Period")
-                                Spacer()
-                                Text("\(Int(preferencesManager.alertThreshold)) seconds")
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Slider(value: $preferencesManager.alertThreshold, in: 1...10, step: 1)
-                        }
+                Section("Monitoring") {
+                    Toggle("Auto-start Monitoring", isOn: $preferencesManager.autoStartMonitoring)
+                    
+                    Toggle("Launch at Login", isOn: $preferencesManager.launchAtLogin)
+                }
+                
+                Section("Detection") {
+                    HStack {
+                        Text("Alert Cooldown Period")
+                        Spacer()
+                        Text("\(Int(preferencesManager.alertThreshold)) seconds")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Slider(value: $preferencesManager.alertThreshold, in: 1...10, step: 1)
+                }
             }
             .formStyle(.grouped)
             

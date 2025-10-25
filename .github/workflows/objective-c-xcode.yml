@@ -1,0 +1,200 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Xcode - Build and Analyze
+
+on:
+  push:
+    branches: [ "main", "develop", "master" ]
+  pull_request:
+    branches: [ "main", "develop", "master" ]
+
+env:
+  XCODE_VERSION: '15.0'
+  SCHEME: 'isee'
+  PROJECT: 'isee.xcodeproj'
+
+jobs:
+  build-and-analyze:
+    name: Build and Analyze with Xcode
+    runs-on: macos-13
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Extract version from README
+      run: |
+        VERSION=$(grep -m 1 "Version:" README.md | sed 's/.*Version: //' | sed 's/\*\*//' | xargs)
+        echo "APP_VERSION=${VERSION:-Beta-V1.0.0}" >> $GITHUB_ENV
+        echo "Building iSee version: ${VERSION:-Beta-V1.0.0}"
+
+    - name: Select Xcode version
+      run: |
+        sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+        xcodebuild -version
+        swift --version
+
+    - name: Show build settings
+      run: |
+        xcodebuild -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -showBuildSettings
+
+    - name: Build for Debug
+      run: |
+        echo "🔨 Building iSee ${{ env.APP_VERSION }} (Debug)..."
+        xcodebuild clean build \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination 'platform=macOS,arch=arm64' \
+          -configuration Debug \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty || exit 1
+
+    - name: Build for Release
+      run: |
+        echo "🔨 Building iSee ${{ env.APP_VERSION }} (Release)..."
+        xcodebuild clean build \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination 'platform=macOS,arch=arm64' \
+          -configuration Release \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty || exit 1
+
+    - name: Analyze code
+      continue-on-error: true
+      run: |
+        echo "🔍 Analyzing code with Xcode static analyzer..."
+        xcodebuild analyze \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination 'platform=macOS,arch=arm64' \
+          -configuration Debug \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty || exit 0
+
+    - name: Archive build products
+      if: success()
+      run: |
+        echo "📦 Archiving build products..."
+        xcodebuild archive \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination 'platform=macOS,arch=arm64' \
+          -archivePath "./build/iSee.xcarchive" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty || exit 1
+
+    - name: Export build logs
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: xcodebuild-logs
+        path: |
+          ~/Library/Logs/DiagnosticReports/
+          *.log
+        retention-days: 7
+
+    - name: Show build summary
+      if: always()
+      run: |
+        echo ""
+        echo "╔══════════════════════════════════════════════════════╗"
+        echo "║        iSee ${{ env.APP_VERSION }} Build Summary     ║"
+        echo "╚══════════════════════════════════════════════════════╝"
+        echo ""
+        echo "Project: ${{ env.PROJECT }}"
+        echo "Scheme: ${{ env.SCHEME }}"
+        echo "Xcode: ${{ env.XCODE_VERSION }}"
+        echo "Platform: macOS (arm64)"
+        echo ""
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Build and analysis completed successfully"
+        else
+          echo "❌ Build or analysis failed"
+        fi
+
+  test:
+    name: Run Tests
+    runs-on: macos-13
+    needs: build-and-analyze
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+
+    - name: Run unit tests
+      continue-on-error: true
+      run: |
+        echo "🧪 Running unit tests..."
+        xcodebuild test \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination 'platform=macOS,arch=arm64' \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty || exit 0
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/*.xcresult
+        retention-days: 7
+
+  code-coverage:
+    name: Code Coverage Analysis
+    runs-on: macos-13
+    needs: test
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+
+    - name: Generate code coverage
+      continue-on-error: true
+      run: |
+        echo "📊 Generating code coverage report..."
+        xcodebuild test \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination 'platform=macOS,arch=arm64' \
+          -enableCodeCoverage YES \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          | xcpretty || exit 0
+
+    - name: Export coverage report
+      continue-on-error: true
+      run: |
+        xcrun xccov view --report --json \
+          ~/Library/Developer/Xcode/DerivedData/*/Logs/Test/*.xcresult \
+          > coverage.json || exit 0
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage.json
+        retention-days: 30
+

@@ -1,3 +1,11 @@
+//
+//  MenuBarController.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import SwiftUI
 import AppKit
 import Combine

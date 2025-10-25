@@ -1,3 +1,11 @@
+//
+//  CameraManager.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import AVFoundation
 import SwiftUI
 #if canImport(UIKit)
@@ -25,11 +33,21 @@ class CameraManager: NSObject, ObservableObject {
     var visionProcessor: VisionProcessor?
     
     // MARK: - Public Properties
-    var previewLayer: AVCaptureVideoPreviewLayer {
+    // Store preview layer as property (not computed) to prevent creating new layer each time
+    lazy var previewLayer: AVCaptureVideoPreviewLayer = {
         let layer = AVCaptureVideoPreviewLayer(session: captureSession)
         layer.videoGravity = .resizeAspectFill
+        
+        // Explicitly set connection properties for proper video display
+        if let connection = layer.connection {
+            if connection.isVideoMirroringSupported {
+                connection.automaticallyAdjustsVideoMirroring = false
+                connection.isVideoMirrored = true  // Mirror for front camera (like FaceTime)
+            }
+        }
+        
         return layer
-    }
+    }()
     
     // MARK: - Initialization
     override init() {

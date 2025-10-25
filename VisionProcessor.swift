@@ -1,3 +1,11 @@
+//
+//  VisionProcessor.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import Vision
 import AVFoundation
 #if canImport(UIKit)

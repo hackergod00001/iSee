@@ -1,12 +1,27 @@
 #!/bin/bash
 
-# Create DMG for iSee v0.1.0
+# Create DMG for iSee - Version extracted dynamically from README.md
 APP_NAME="iSee"
-VERSION="v0.1.0"
+
+# Extract version from README.md
+if [ -f "README.md" ]; then
+    VERSION=$(grep -m 1 "Version:" README.md | sed 's/.*Version: //' | sed 's/\*\*//' | xargs)
+    # Remove spaces and add 'v' prefix if not present
+    VERSION=$(echo "$VERSION" | tr -d ' ')
+    if [[ ! $VERSION =~ ^v ]]; then
+        VERSION="v${VERSION}"
+    fi
+else
+    # Fallback to default version if README.md not found
+    VERSION="v1.0.0"
+    echo "⚠️  README.md not found, using default version: ${VERSION}"
+fi
+
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 TEMP_DMG="temp_${DMG_NAME}"
 
 echo "🚀 Building iSee ${VERSION} DMG..."
+echo "📋 Version extracted from README.md"
 
 # Clean up any existing DMG files
 rm -f "${DMG_NAME}" "${TEMP_DMG}"

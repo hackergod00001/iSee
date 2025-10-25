@@ -1,6 +1,22 @@
+//
+//  CameraOverlayView.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import SwiftUI
 import Vision
 import AVFoundation
+
+/// Overlay appearance style options
+enum OverlayStyle: String, CaseIterable, Identifiable {
+    case matteBlack = "Matte Black"
+    case glassmorphism = "Glass (Translucent)"
+    
+    var id: String { rawValue }
+}
 
 /// Dynamic Island-style camera overlay view with liquid expansion animation
 struct CameraOverlayView: View {
@@ -8,38 +24,112 @@ struct CameraOverlayView: View {
     @State private var animationPhase: AnimationPhase = .hidden
     @State private var scale: CGFloat = 0.1
     @State private var cornerRadius: CGFloat = 100
+    @AppStorage("overlayStyle") private var overlayStyle: String = OverlayStyle.matteBlack.rawValue
     
     enum AnimationPhase {
         case hidden, expanding, expanded, collapsing
     }
     
     var body: some View {
-        ZStack {
-            // Glassmorphism background with notch-integrated styling
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(.white.opacity(0.15), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
+        ZStack(alignment: .top) {
+            // NotchDrop-style background layer
+            notchBackgroundLayer
+                .zIndex(0)
             
-            // Content overlay
+            // Content layer on top
             VStack(spacing: 0) {
                 // Top bar with camera integration
                 topBarView
                 
-                Divider()
-                    .opacity(0.3)
-                
                 // Camera feed area
                 cameraFeedView
             }
+            .frame(width: 340, height: 220)
+            .zIndex(1)
         }
-        .frame(width: 340, height: 220)
+        .frame(width: 340 + cornerRadius * 2, height: 220)
         .scaleEffect(scale)
         .onAppear {
             startLiquidExpansion()
+        }
+    }
+    
+    // MARK: - NotchDrop-style Background
+    
+    /// Background layer inspired by NotchDrop's design
+    private var notchBackgroundLayer: some View {
+        Rectangle()
+            .foregroundStyle(.black)  // Matte black like NotchDrop
+            .mask(notchBackgroundMask)
+            .frame(width: 340 + cornerRadius * 2, height: 220)
+            .shadow(
+                color: .black.opacity(scale > 0.5 ? 1 : 0),
+                radius: 16
+            )
+    }
+    
+    /// Custom mask for NotchDrop-style rounded corners
+    private var notchBackgroundMask: some View {
+        Rectangle()
+            .foregroundStyle(.black)
+            .frame(width: 340, height: 220)
+            .clipShape(
+                .rect(
+                    bottomLeadingRadius: cornerRadius,
+                    bottomTrailingRadius: cornerRadius
+                )
+            )
+            .overlay {
+                // Top-left curved corner
+                ZStack(alignment: .topTrailing) {
+                    Rectangle()
+                        .frame(width: cornerRadius, height: cornerRadius)
+                        .foregroundStyle(.black)
+                    Rectangle()
+                        .clipShape(.rect(topTrailingRadius: cornerRadius))
+                        .foregroundStyle(.white)
+                        .frame(
+                            width: cornerRadius + 8,
+                            height: cornerRadius + 8
+                        )
+                        .blendMode(.destinationOut)
+                }
+                .compositingGroup()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .offset(x: -cornerRadius - 8 + 0.5, y: -0.5)
+            }
+            .overlay {
+                // Top-right curved corner
+                ZStack(alignment: .topLeading) {
+                    Rectangle()
+                        .frame(width: cornerRadius, height: cornerRadius)
+                        .foregroundStyle(.black)
+                    Rectangle()
+                        .clipShape(.rect(topLeadingRadius: cornerRadius))
+                        .foregroundStyle(.white)
+                        .frame(
+                            width: cornerRadius + 8,
+                            height: cornerRadius + 8
+                        )
+                        .blendMode(.destinationOut)
+                }
+                .compositingGroup()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .offset(x: cornerRadius + 8 - 0.5, y: -0.5)
+            }
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// Get overlay background material based on user preference
+    private var overlayBackgroundMaterial: AnyShapeStyle {
+        let style = OverlayStyle(rawValue: overlayStyle) ?? .matteBlack
+        
+        switch style {
+        case .matteBlack:
+            return AnyShapeStyle(Color.black)  // Fully opaque black
+        case .glassmorphism:
+            return AnyShapeStyle(.ultraThinMaterial)  // Translucent glass effect
         }
     }
     
@@ -51,33 +141,21 @@ struct CameraOverlayView: View {
             Button(action: closeOverlay) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 16))
-                    .foregroundColor(.red)
+                    .foregroundColor(.red)  // Red for close button
                     .frame(width: 30, height: 44)
             }
             .buttonStyle(PlainButtonStyle())
             
             Spacer()
             
-            // Camera area (center) - darkened to represent hardware
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(Color.green)
-                    .frame(width: 6, height: 6)
-                Text("Camera")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
-            .frame(width: 100, height: 44)
-            .background(Color.black.opacity(0.3))
-            .cornerRadius(22)
-            
+            // Empty center area (behind notch)
             Spacer()
             
             // Settings button (right)
             Button(action: openSettings) {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.secondary)  // Gray for settings button
                     .frame(width: 30, height: 44)
             }
             .buttonStyle(PlainButtonStyle())
@@ -171,19 +249,34 @@ struct CameraPreviewView: NSViewRepresentable {
     
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
-        
-        let previewLayer = cameraManager.previewLayer
-        previewLayer.frame = CGRect(x: 0, y: 0, width: 324, height: 160)
-        view.layer = CALayer()
-        view.layer?.addSublayer(previewLayer)
         view.wantsLayer = true
+        
+        // Create clean background layer
+        let backgroundLayer = CALayer()
+        backgroundLayer.backgroundColor = NSColor.black.cgColor  // Black background for clean look
+        view.layer = backgroundLayer
+        
+        // Get preview layer and set explicit initial frame (433x260)
+        let previewLayer = cameraManager.previewLayer
+        previewLayer.frame = CGRect(x: 0, y: 0, width: 433, height: 260)
+        previewLayer.videoGravity = .resizeAspectFill
+        
+        // Ensure layer is set up correctly
+        view.layer?.addSublayer(previewLayer)
+        
+        // Force immediate layout
+        view.layoutSubtreeIfNeeded()
         
         return view
     }
     
     func updateNSView(_ nsView: NSView, context: Context) {
-        if let previewLayer = nsView.layer?.sublayers?.first as? AVCaptureVideoPreviewLayer {
-            previewLayer.frame = CGRect(x: 0, y: 0, width: 324, height: 160)
+        // Update frame on main thread and force redisplay
+        DispatchQueue.main.async {
+            if let previewLayer = nsView.layer?.sublayers?.first(where: { $0 is AVCaptureVideoPreviewLayer }) as? AVCaptureVideoPreviewLayer {
+                previewLayer.frame = nsView.bounds
+                previewLayer.setNeedsDisplay()
+            }
         }
     }
 }
@@ -193,7 +286,7 @@ struct CameraPreviewView: NSViewRepresentable {
 
 struct FaceDetectionOverlayView: View {
     @ObservedObject var visionProcessor: VisionProcessor
-    @State private var previewSize: CGSize = CGSize(width: 324, height: 160)
+    @State private var previewSize: CGSize = .zero  // Will be set dynamically from geometry
     
     var body: some View {
         GeometryReader { geometry in
@@ -227,8 +320,9 @@ struct FaceBoundingBoxView: View {
         let visionBox = face.boundingBox
         
         // Convert Vision's bottom-left origin to top-left
+        // Also flip horizontally to match mirrored camera preview
         let convertedRect = CGRect(
-            x: visionBox.origin.x,
+            x: 1.0 - visionBox.origin.x - visionBox.width,  // Flip X for mirrored view
             y: 1.0 - visionBox.origin.y - visionBox.height,
             width: visionBox.width,
             height: visionBox.height

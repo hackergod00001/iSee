@@ -1,3 +1,11 @@
+//
+//  NotificationManager.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import Foundation
 import UserNotifications
 
@@ -43,104 +51,46 @@ class NotificationManager: NSObject, ObservableObject {
         }
     }
     
-    /// Show shoulder surfer alert notification
+    /// Show shoulder surfer alert notification using NotchNotification with actions
     func showShoulderSurferAlert() {
-        guard isAuthorized else {
-            print("NotificationManager: Cannot show notification - not authorized")
-            return
-        }
+        print("NotificationManager: Showing shoulder surfer alert via NotchNotification")
         
-        let content = UNMutableNotificationContent()
-        content.title = "🚨 Shoulder Surfer Detected!"
-        content.body = "Someone is looking at your screen. Consider covering sensitive information or moving to a private location."
-        content.sound = .default
-        content.categoryIdentifier = "SHOULDER_SURFER_ALERT"
-        
-        // Add action buttons
-        let showFeedAction = UNNotificationAction(
-            identifier: "SHOW_FEED",
-            title: "👁️ View Camera Feed",
-            options: [.foreground]
-        )
-        
-        let dismissAction = UNNotificationAction(
-            identifier: "DISMISS",
-            title: "✓ Acknowledged",
-            options: []
-        )
-        
-        let category = UNNotificationCategory(
-            identifier: "SHOULDER_SURFER_ALERT",
-            actions: [showFeedAction, dismissAction],
-            intentIdentifiers: [],
-            options: []
-        )
-        
-        center.setNotificationCategories([category])
-        
-        let request = UNNotificationRequest(
-            identifier: "shoulder-surfer-alert",
-            content: content,
-            trigger: nil // Show immediately
-        )
-        
-        center.add(request) { error in
-            if let error = error {
-                print("NotificationManager: Failed to show notification: \(error)")
-            } else {
-                print("NotificationManager: Shoulder surfer alert notification sent")
+        CameraNotchManager.showNotificationWithActions(
+            title: "Shoulder Surfer Detected!",
+            message: "Someone is looking at your screen",
+            isError: true,
+            onPreview: {
+                // Show camera overlay when Preview is clicked
+                DispatchQueue.main.async {
+                    BackgroundMonitoringService.shared.showOverlay()
+                }
+            },
+            onAcknowledge: {
+                // Just dismiss the notification (auto-dismisses)
+                print("NotificationManager: Alert acknowledged")
             }
-        }
+        )
     }
     
-    /// Show warning notification for multiple faces detected
+    /// Show warning notification for multiple faces detected using NotchNotification with actions
     func showWarningNotification() {
-        guard isAuthorized else {
-            print("NotificationManager: Cannot show notification - not authorized")
-            return
-        }
+        print("NotificationManager: Showing warning via NotchNotification")
         
-        let content = UNMutableNotificationContent()
-        content.title = "⚠️ Multiple People Detected"
-        content.body = "More than one person is visible. Be cautious with sensitive information on your screen."
-        content.sound = .default
-        content.categoryIdentifier = "WARNING_ALERT"
-        
-        // Add action buttons
-        let showFeedAction = UNNotificationAction(
-            identifier: "SHOW_FEED",
-            title: "👁️ View Camera Feed",
-            options: [.foreground]
-        )
-        
-        let dismissAction = UNNotificationAction(
-            identifier: "DISMISS",
-            title: "✓ Acknowledged",
-            options: []
-        )
-        
-        let category = UNNotificationCategory(
-            identifier: "WARNING_ALERT",
-            actions: [showFeedAction, dismissAction],
-            intentIdentifiers: [],
-            options: []
-        )
-        
-        center.setNotificationCategories([category])
-        
-        let request = UNNotificationRequest(
-            identifier: "warning-alert",
-            content: content,
-            trigger: nil // Show immediately
-        )
-        
-        center.add(request) { error in
-            if let error = error {
-                print("NotificationManager: Failed to show warning notification: \(error)")
-            } else {
-                print("NotificationManager: Warning notification sent")
+        CameraNotchManager.showNotificationWithActions(
+            title: "Multiple People Detected",
+            message: "Be cautious with sensitive information",
+            isError: false,
+            onPreview: {
+                // Show camera overlay when Preview is clicked
+                DispatchQueue.main.async {
+                    BackgroundMonitoringService.shared.showOverlay()
+                }
+            },
+            onAcknowledge: {
+                // Just dismiss the notification (auto-dismisses)
+                print("NotificationManager: Warning acknowledged")
             }
-        }
+        )
     }
     
     /// Show camera permission notification
@@ -190,12 +140,10 @@ class NotificationManager: NSObject, ObservableObject {
     /// Handle state changes with rate limiting
     func handleStateChange(to newState: StateController.SecurityState) {
         print("NotificationManager: State changed to \(newState)")
-        print("NotificationManager: isAuthorized = \(isAuthorized)")
         
-        guard isAuthorized else { 
-            print("NotificationManager: Cannot send notification - not authorized")
-            return 
-        }
+        // Note: We're using in-notch NotchNotification system, which doesn't require
+        // macOS system notification permissions (isAuthorized).
+        // The permission check is done by BackgroundMonitoringService via preferencesManager.notificationsEnabled
         
         // Check if we should send a notification
         let now = Date()

@@ -1,3 +1,11 @@
+//
+//  MenuBarView.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import SwiftUI
 
 /// SwiftUI view for the menu bar dropdown

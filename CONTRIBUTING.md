@@ -1,5 +1,8 @@
 # Contributing to iSee
 
+**Version:** Beta V1.0.0  
+**Last Updated:** October 25, 2025
+
 Thank you for your interest in contributing to iSee! This document provides guidelines for contributing to the project.
 
 ## Code of Conduct
@@ -55,6 +58,8 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 - Use meaningful variable and function names
 - Add comments for complex logic
 - Keep functions focused and small
+- All new Swift files must include header comment with file name, project name, and date
+- Refer to `COMPLETE_LOGIC_DOCUMENTATION.md` for architecture patterns
 
 ### Privacy Guidelines
 - **No data collection**: Never add analytics or telemetry

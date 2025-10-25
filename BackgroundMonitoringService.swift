@@ -1,3 +1,11 @@
+//
+//  BackgroundMonitoringService.swift
+//  isee
+//
+//  Created by Upmanyu Jha and Updated on 10/25/2025.
+//
+
+
 import Foundation
 import Combine
 import AVFoundation
@@ -18,7 +26,7 @@ class BackgroundMonitoringService: ObservableObject {
     private let preferencesManager = PreferencesManager.shared
     
     private var cancellables = Set<AnyCancellable>()
-    private var overlayWindow: CameraOverlayWindow?
+    private var isOverlayVisible = false
     
     // MARK: - Initialization
     private init() {
@@ -40,6 +48,10 @@ class BackgroundMonitoringService: ObservableObject {
         
         // Connect camera manager to vision processor
         cameraManager.visionProcessor = visionProcessor
+        
+        // Start camera session for face detection
+        print("BackgroundMonitoringService: Starting camera session for monitoring")
+        cameraManager.startSession()
         
         // Start monitoring
         stateController.startMonitoring()
@@ -63,6 +75,10 @@ class BackgroundMonitoringService: ObservableObject {
         
         // Hide overlay if showing
         hideOverlay()
+        
+        // Stop camera session
+        print("BackgroundMonitoringService: Stopping camera session")
+        cameraManager.stopSession()
         
         // Disconnect camera
         cameraManager.visionProcessor = nil
@@ -88,25 +104,41 @@ class BackgroundMonitoringService: ObservableObject {
         }
     }
     
-    /// Show camera overlay window
+    /// Show camera overlay in the notch using NotchNotification
     func showOverlay() {
-        guard isMonitoring else { return }
-        
-        if overlayWindow == nil {
-            overlayWindow = CameraOverlayWindow()
+        guard !isOverlayVisible else {
+            print("BackgroundMonitoringService: Overlay already visible, skipping")
+            return
         }
         
-        overlayWindow?.showWithLiquidExpansion() // Use new liquid expansion method
+        // Ensure camera session is running
+        print("BackgroundMonitoringService: Starting camera session explicitly")
+        cameraManager.startSession()
+        
+        CameraNotchManager.shared.showCameraOverlay(
+            cameraManager: cameraManager,
+            visionProcessor: visionProcessor,
+            onDismiss: { [weak self] in
+                self?.isOverlayVisible = false
+                print("BackgroundMonitoringService: Overlay dismissed")
+            }
+        )
+        isOverlayVisible = true
+        print("BackgroundMonitoringService: Overlay shown")
     }
     
-    /// Hide camera overlay window
+    /// Hide camera overlay
     func hideOverlay() {
-        overlayWindow?.hideWindow()
+        guard isOverlayVisible else { return }
+        
+        CameraNotchManager.shared.hideCameraOverlay()
+        isOverlayVisible = false
+        print("BackgroundMonitoringService: Overlay hidden")
     }
     
     /// Toggle overlay visibility
     func toggleOverlay() {
-        if overlayWindow?.isVisible == true {
+        if isOverlayVisible {
             hideOverlay()
         } else {
             showOverlay()
@@ -162,17 +194,20 @@ class BackgroundMonitoringService: ObservableObject {
         // Handle alert duration tracking for long-term surfing indicator
         handleAlertDurationTracking(for: state)
         
+        // Note: Camera overlay is opened manually via "Toggle Camera Feed" menu item
+        // or via "Preview" button in notification popup - not automatically on alert
         switch state {
         case .alert:
-            // Show overlay when shoulder surfer detected
-            showOverlay()
+            // Alert state - notification popup will show (handled above)
+            // Camera overlay only opens if user clicks "Preview" in notification
+            break
             
         case .safe:
-            // Hide overlay when returning to safe state
+            // Hide overlay when returning to safe state (if it was open)
             hideOverlay()
             
         case .warning:
-            // Overlay can stay visible during warning state
+            // Warning state - no automatic overlay
             break
             
         case .error:

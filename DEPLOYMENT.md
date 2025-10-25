@@ -1,5 +1,8 @@
 # iSee App - Deployment Guide for macOS
 
+**Version:** Beta V1.0.0  
+**Last Updated:** October 25, 2025
+
 ## Overview
 iSee is a sophisticated privacy-first shoulder surfer detection app for macOS that uses on-device face detection to alert users when someone else is looking at their screen. Features include a beautiful Dynamic Island-style camera overlay, intelligent long-term threat detection, and comprehensive settings for maximum security and usability.
 
@@ -13,7 +16,7 @@ iSee is a sophisticated privacy-first shoulder surfer detection app for macOS th
 
 ### Option 1: Download Pre-built App
 1. Go to the [Releases](https://github.com/hackergod00001/iSee/releases) page
-2. Download `iSee-v0.1.0.dmg` for the latest version
+2. Download `iSee-Beta-V1.0.0.dmg` for the latest version
 3. Open the downloaded DMG file
 4. Drag iSee.app to your Applications folder
 5. Launch iSee from Applications or Spotlight

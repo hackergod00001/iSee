@@ -13,6 +13,11 @@ xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+build/
+DerivedData/
+*.xcuserstate
+*.xcworkspace
+releases/
 
 # Build products
 build/
