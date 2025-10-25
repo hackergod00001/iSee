@@ -10,12 +10,11 @@ on:
 
 env:
   XCODE_VERSION: '15.0'
-  MACOS_VERSION: 'macos-13'
 
 jobs:
   build:
     name: Build and Test iSee
-    runs-on: ${{ env.MACOS_VERSION }}
+    runs-on: macos-13
     
     steps:
     - name: Checkout repository
@@ -94,7 +93,7 @@ jobs:
 
   lint:
     name: Swift Lint and Code Quality
-    runs-on: ${{ env.MACOS_VERSION }}
+    runs-on: macos-13
     
     steps:
     - name: Checkout repository
@@ -126,7 +125,7 @@ jobs:
         
   security-scan:
     name: Security and Privacy Scan
-    runs-on: ${{ env.MACOS_VERSION }}
+    runs-on: macos-13
     
     steps:
     - name: Checkout repository
@@ -176,7 +175,7 @@ jobs:
 
   build-release:
     name: Build Release DMG
-    runs-on: ${{ env.MACOS_VERSION }}
+    runs-on: macos-13
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     
@@ -241,7 +240,7 @@ jobs:
         
   project-info:
     name: iSee Project Information
-    runs-on: ${{ env.MACOS_VERSION }}
+    runs-on: macos-13
     
     steps:
     - name: Checkout repository
@@ -328,7 +327,7 @@ jobs:
 
   sync-to-master:
     name: Sync Main → Master
-    runs-on: ${{ env.MACOS_VERSION }}
+    runs-on: macos-13
     needs: [build, lint, security-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
