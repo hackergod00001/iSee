@@ -8,8 +8,7 @@
 import Foundation
 import SwiftUI
 
-@usableFromInline
-let defaultInterval: TimeInterval = 2
+public let defaultInterval: TimeInterval = 2
 
 public enum NotchNotification {
     public static func present(message: String, interval: TimeInterval = defaultInterval) {
