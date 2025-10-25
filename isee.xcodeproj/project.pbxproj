@@ -25,7 +25,6 @@
 		898345301AB15352FF5FD14B /* Ext+NSScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE312F0BB390473FAF74DB12 /* Ext+NSScreen.swift */; };
 		8BDA1B49C31C4F98932786D5 /* CameraNotchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA01A8931DFE01F033FD64EC /* CameraNotchManager.swift */; };
 		91AC13C13845417A73174819 /* NotchWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29BAE7D37CEFD0E600FCAB86 /* NotchWindowController.swift */; };
-		99EF8BB2324E6F15D926EFA0 /* CameraNotchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4B52307B65BBCDFE60E75E /* CameraNotchManager.swift */; };
 		A1234567890ABCDEF001 /* iseeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF000 /* iseeApp.swift */; };
 		A1234567890ABCDEF005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* Assets.xcassets */; };
 		A1234567890ABCDEF008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF007 /* Preview Assets.xcassets */; };
@@ -67,7 +66,6 @@
 		C94620D2553F2D00EB8A0A69 /* NotchContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchContentView.swift; sourceTree = "<group>"; };
 		DA01A8931DFE01F033FD64EC /* CameraNotchManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CameraNotchManager.swift; sourceTree = "<group>"; };
 		DE312F0BB390473FAF74DB12 /* Ext+NSScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Ext+NSScreen.swift"; sourceTree = "<group>"; };
-		FF4B52307B65BBCDFE60E75E /* CameraNotchManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CameraNotchManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,7 +112,6 @@
 				A1234567890ABCDEFFE /* Products */,
 				66646815D4D441BE7DE1DCB2 /* NotchNotification */,
 				DA01A8931DFE01F033FD64EC /* CameraNotchManager.swift */,
-				FF4B52307B65BBCDFE60E75E /* CameraNotchManager.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -244,7 +241,6 @@
 				48A15765562F6694BA2AB0F8 /* NotchWindow.swift in Sources */,
 				91AC13C13845417A73174819 /* NotchWindowController.swift in Sources */,
 				D480C3206D6A0D00B0B84515 /* NotificationContext.swift in Sources */,
-				99EF8BB2324E6F15D926EFA0 /* CameraNotchManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
