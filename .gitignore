@@ -108,3 +108,4 @@ Temporary Items
 .env.test.local
 .env.production.local
 .cursor/
+.cursor/
