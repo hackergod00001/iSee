@@ -8,6 +8,16 @@
 
 iSee is a sophisticated macOS menu bar application that provides real-time shoulder surfer detection using your MacBook's camera. It runs silently in the background and alerts you when someone is looking at your screen, featuring intelligent long-term threat detection, a beautiful Dynamic Island-style notch integration, and comprehensive privacy-first security features.
 
+---
+> [!IMPORTANT]
+> We don't have an Apple Developer account yet. The application will show a popup on first launch that the app is from an unidentified developer.
+> 1. Click **OK** to close the popup.
+> 2. Open **System Settings** > **Privacy & Security**.
+> 3. Scroll down and click **Open Anyway** next to the warning about the app.
+> 4. Confirm your choice if prompted.
+>
+> You only need to do this once.
+
 ## 🚀 Quick Start
 
 ### Download & Install
@@ -395,3 +405,6 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 **Note**: This app demonstrates advanced privacy-first security applications using Apple's on-device machine learning capabilities. It's designed for real-world use with comprehensive testing and optimization. The Dynamic Island integration leverages the NotchNotification framework (originally created by 秋星桥, modified for iSee).
 
+---
+
+Copyright © 2025 Upmanyu Jha aka Hackergod00001. All Rights Reserved.
