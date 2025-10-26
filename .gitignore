@@ -99,7 +99,6 @@ Temporary Items
 # IDE
 .vscode/
 .idea/
-.cursor/
 
 # Environment variables
 .env
@@ -107,5 +106,3 @@ Temporary Items
 .env.development.local
 .env.test.local
 .env.production.local
-.cursor/
-.cursor/
