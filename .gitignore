@@ -99,6 +99,7 @@ Temporary Items
 # IDE
 .vscode/
 .idea/
+.cursor/
 
 # Environment variables
 .env
